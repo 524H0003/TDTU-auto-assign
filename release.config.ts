@@ -26,14 +26,6 @@ const config: GlobalConfig = {
         ],
       },
     ],
-    [
-      "@semantic-release/git",
-      {
-        assets: ["**/*", "!release.zip", "!dist", "!src/styles/tailwind.css"],
-        message:
-          "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}",
-      },
-    ],
   ],
 };
 
