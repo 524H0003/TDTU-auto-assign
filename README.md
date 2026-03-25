@@ -15,7 +15,7 @@
 # Hướng dẫn cài đặt
 
 - Tải tiện ích mới nhất
-  [tại đây](https://github.com/524H0003/TDTU-auto-login/releases/latest) dưới
+  [tại đây](https://github.com/524H0003/TDTU-auto-assign/releases/latest) dưới
   dạng **.zip**
 - Giải nén tập tin ở vị trí có thể sử dụng lâu dài
 - Thêm tiện ích theo hướng dẫn
