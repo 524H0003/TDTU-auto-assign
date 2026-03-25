@@ -22,10 +22,14 @@ export default function PopupPage() {
     [active, setActive] = useState<boolean>(false);
 
   useEffect(() => {
-    chrome.storage.local.get<LocalStorage>(["password", "plan"], (data) => {
-      setPassword(data.password || "");
-      setPlan(data.plan || "");
-    });
+    chrome.storage.local.get<LocalStorage>(
+      ["password", "plan", "active"],
+      (data) => {
+        setPassword(data.password || "");
+        setPlan(data.plan || "");
+        setActive(data.active || false);
+      },
+    );
   }, []);
 
   const handleSave = () => {

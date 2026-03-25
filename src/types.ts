@@ -8,3 +8,9 @@ export interface IAppSetting {
 }
 
 export interface LocalStorage extends IAccount, IAppSetting { }
+
+declare global {
+  interface Window {
+    executeKit: (input: IAccount) => Promise<void>;
+  }
+}

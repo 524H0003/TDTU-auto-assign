@@ -1,6 +1,6 @@
-import { IAppSetting, LocalStorage } from "./types";
+import { LocalStorage } from "./types";
 
-const TDTURegex = /^https?:\/\/.*\.tdtu\.edu\.vn(:\d+)?\/.*$/;
+const TDTURegex = /^https?:\/\/dkmh\.tdtu\.edu\.vn(:\d+)?\/.*$/;
 
 // Enable logging with timestamp
 const originalLog = console.log;
@@ -8,19 +8,12 @@ console.log = function (...args) {
   originalLog.apply(console, [`[${new Date().toISOString()}]`, ...args]);
 };
 
-function createAlarm(minutes: number) {
-  chrome.alarms.create("autoLoginAlarm", {
-    periodInMinutes: minutes,
-  });
-  console.log(`Đã đặt báo thức chạy mỗi ${minutes} phút.`);
-}
-
 function executeScript(tab: chrome.tabs.Tab) {
-  const target = tab.url!.split(".")[0]!.split("/").at(-1);
+  const target = new URL(tab.url!).searchParams.get("go") || 'dkmhdkdd';
 
   chrome.storage.local.get<LocalStorage>(
-    ["active", "username", "password"],
-    async ({ active, username, password }) => {
+    ["active", "password"],
+    async ({ active, password }) => {
       if (!active) return;
 
       await chrome.scripting
@@ -39,10 +32,10 @@ function executeScript(tab: chrome.tabs.Tab) {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id! },
         world: "MAIN",
-        args: [{ username, password }],
+        args: [{ password }],
         func: (creds) => {
-          if (typeof window.initAutoLogin === "function") {
-            window.initAutoLogin(creds);
+          if (typeof window.executeKit === "function") {
+            window.executeKit(creds);
           }
         },
       });
@@ -50,30 +43,11 @@ function executeScript(tab: chrome.tabs.Tab) {
   );
 }
 
-chrome.storage.local.get<IAppSetting>(["interval"], (data) => {
-  if (data.interval) createAlarm(data.interval);
-  else {
-    chrome.storage.local.set({ interval: 3 });
-    createAlarm(3);
-  }
-});
-
-chrome.runtime.onMessage.addListener((request) => {
-  if (request.action === "start_alarm") {
-    chrome.alarms.clear("autoLoginAlarm");
-    createAlarm(request.interval);
-  }
-});
-
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete" || !tab.url || !TDTURegex.test(tab.url))
     return;
 
-  const target = tab.url!.split(".")[0]!.split("/").at(-1),
-    module = await import(`./context/${target}.ts`),
-    runOnUpdate = module.runOnUpdate || false;
-
-  if (runOnUpdate) executeScript(tab);
+  executeScript(tab);
 });
 
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
@@ -85,84 +59,5 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
     }
   } catch (error) {
     console.error("Lỗi khi lấy thông tin tab:", error);
-  }
-});
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "autoLoginAlarm") {
-    chrome.tabs.query(
-      { url: ["*://*.tdtu.edu.vn/*", "*://*.tdtu.edu.vn:*/*"] },
-      (tabs) => {
-        if (tabs.length > 0) {
-          tabs.forEach(executeScript);
-        } else {
-          console.log(
-            "Báo thức reo nhưng không tìm thấy tab TDTU nào đang mở.",
-          );
-        }
-      },
-    );
-
-    chrome.storage.local.get<IAppSetting>(
-      ["active", "notOpenRefreshCookieTab"],
-      async ({ active, notOpenRefreshCookieTab }) => {
-        if (!active || notOpenRefreshCookieTab) return;
-
-        const hostUrl = "https://sso.tdt.edu.vn/Authenticate.aspx",
-          url = new URL(hostUrl);
-
-        url.searchParams.append(
-          "ReturnUrl",
-          "https://dkmh.tdtu.edu.vn/default.aspx",
-        );
-
-        chrome.tabs.create(
-          { url: url.toString(), pinned: true, active: false },
-          (tab) => {
-            function listener(
-              tabId: number,
-              info: chrome.tabs.OnUpdatedInfo,
-              updatedTab: chrome.tabs.Tab,
-            ) {
-              if (
-                !updatedTab.url ||
-                tabId !== tab.id ||
-                info.status !== "complete"
-              )
-                return;
-
-              const parsedUrl = new URL(updatedTab.url),
-                allowedHosts = [
-                  "dkmh.tdtu.edu.vn",
-                  "old-stdportal.tdtu.edu.vn",
-                ];
-
-              if (
-                parsedUrl.protocol !== "https:" ||
-                !allowedHosts.includes(parsedUrl.hostname)
-              )
-                return;
-
-              chrome.tabs.onUpdated.removeListener(listener);
-
-              setTimeout(() => chrome.tabs.remove(tabId), 1000);
-            }
-
-            chrome.tabs.onUpdated.addListener(listener);
-
-            setTimeout(() => {
-              chrome.tabs.onUpdated.removeListener(listener);
-
-              const id = tab.id;
-
-              chrome.tabs.get(id, (existingTab) => {
-                if (!chrome.runtime.lastError && existingTab)
-                  chrome.tabs.remove(id);
-              });
-            }, 5000);
-          },
-        );
-      },
-    );
   }
 });

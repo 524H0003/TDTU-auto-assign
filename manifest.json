@@ -1,6 +1,6 @@
 {
-  "name": "TDTU Auto Login",
-  "description": "Extension Keeps TDTU pages always login",
+  "name": "TDTU Auto Assign",
+  "description": "Extension automatically assign classes",
   "version": "1.9.0",
   "manifest_version": 3,
   "action": {
@@ -8,7 +8,7 @@
     "default_icon": "public/icon.png"
   },
   "permissions": ["storage", "scripting", "alarms", "tabs"],
-  "host_permissions": ["*://*.tdtu.edu.vn/*", "*://*.tdtu.edu.vn:*/*"],
+  "host_permissions": ["*://dkmh.tdtu.edu.vn/*"],
   "background": {
     "scripts": ["./dist/service-worker.js"],
     "service_worker": "./dist/service-worker.js",

@@ -1,51 +1,69 @@
 import { type IAccount } from "../types";
 
 export interface IExecute {
-  usernameField: string;
-  passwordField: string;
+  passwordField?: string;
   url: string | (() => string);
-  postFunc?: (input: Response) => void | Promise<void>;
   conditionFunc?: (data: IAccount) => Promise<boolean> | boolean;
   handleError?: () => void;
-  extendFields?: (formData: FormData | URLSearchParams) => void | Promise<void>;
-  isFormData?: boolean;
+  extendFields?: (formData: {
+    append: (name: string, value: string) => void;
+  }) => void | Promise<void>;
 }
 
 export async function execute({
-  usernameField,
-  passwordField,
+  passwordField = "ctl00$txtXacNhan",
   url,
-  postFunc = () => {},
   conditionFunc = () => true,
   extendFields = () => {},
   handleError = () => {},
-  isFormData = true,
 }: IExecute) {
   if (typeof window === "undefined") return;
 
-  window.initAutoLogin = async (data: IAccount) => {
-    if (data.username && data.password) {
+  window.executeKit = async (data: IAccount) => {
+    if (data.password) {
       if (!(await conditionFunc(data))) return;
-      const formData = isFormData ? new FormData() : new URLSearchParams();
-      formData.append(usernameField, data.username);
-      formData.append(passwordField, data.password);
 
-      extendFields(formData);
+      const targetUrl = typeof url === "function" ? url() : url;
+
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = targetUrl;
+      form.style.display = "none";
+
+      const addToForm = (name: string, value: string) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      };
+
+      addToForm(passwordField, data.password);
+      addToForm("__EVENTTARGET", "ctl00$cmdDangKy");
+      addToForm(
+        "__VIEWSTATEGENERATOR",
+        getHiddenInput('input[name="__VIEWSTATEGENERATOR"]'),
+      );
+      addToForm("__VIEWSTATE", getHiddenInput('input[name="__VIEWSTATE"]'));
+
+      if (typeof extendFields === "function") {
+        extendFields({
+          append: (name, value) => addToForm(name, value),
+        });
+      }
+
+      const submitBtn = document.createElement("button");
+      submitBtn.type = "submit";
+      submitBtn.style.display = "none";
+      form.appendChild(submitBtn);
+
+      document.body.appendChild(form);
 
       try {
-        const targetUrl = typeof url === "function" ? url() : url,
-          response = await fetch(targetUrl, {
-            method: "POST",
-            body: formData,
-          });
-
-        if (!response.ok) {
-          console.error("Gửi POST thất bại, mã lỗi:", response.status);
-        } else {
-          await postFunc(response);
-        }
+        console.log("Đang chuyển hướng và gửi dữ liệu...");
+        submitBtn.click();
       } catch (error) {
-        console.log("Lỗi kết nối khi gửi POST\n", error);
+        console.error("Lỗi khi submit form:", error);
         handleError();
       }
     }
