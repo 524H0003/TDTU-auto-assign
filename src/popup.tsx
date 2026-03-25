@@ -13,43 +13,31 @@ import {
 } from "./components/shadcn/ui/field";
 import { Input } from "./components/shadcn/ui/input";
 import { Switch } from "./components/shadcn/ui/switch";
+import { Textarea } from "./components/shadcn/ui/textarea";
 import { LocalStorage } from "./types";
 
 export default function PopupPage() {
-  const [username, setUsername] = useState(""),
+  const [plan, setPlan] = useState(""),
     [password, setPassword] = useState(""),
-    [interval, setIntervalValue] = useState<number>(3),
     [active, setActive] = useState<boolean>(false);
 
   useEffect(() => {
-    chrome.storage.local.get<LocalStorage>(
-      ["username", "password", "interval", "active"],
-      (data) => {
-        setUsername(data.username || "");
-        setPassword(data.password || "");
-        setIntervalValue(data.interval || 3);
-        setActive(data.active || false);
-      },
-    );
+    chrome.storage.local.get<LocalStorage>(["password", "plan"], (data) => {
+      setPassword(data.password || "");
+      setPlan(data.plan || "");
+    });
   }, []);
 
   const handleSave = () => {
-    chrome.storage.local.set({ username, password, interval }, () => {
-      if (typeof chrome !== "undefined" && chrome.runtime) {
-        chrome.runtime.sendMessage({
-          action: "start_alarm",
-          interval: Number(interval),
-        });
-      }
-    });
+    chrome.storage.local.set({ plan, password });
   };
 
   return (
     <FieldGroup className="p-4">
       <FieldSet>
-        <FieldLegend>TDTU Auto Login</FieldLegend>
+        <FieldLegend>TDTU Auto Assign</FieldLegend>
         <FieldDescription>
-          Tự động đăng nhập tài khoản sinh viên. Phiên bản {packageJson.version}
+          Tự động đăng ký môn học cho sinh viên. Phiên bản {packageJson.version}
         </FieldDescription>
       </FieldSet>
       <Field orientation="horizontal" className="w-fit">
@@ -63,15 +51,9 @@ export default function PopupPage() {
         />
       </Field>
       <Field>
-        <FieldLabel htmlFor="fieldgroup-mssv">Mã số sinh viên</FieldLabel>
-        <Input
-          id="fieldgroup-mssv"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="fieldgroup-password">Mật khẩu</FieldLabel>
+        <FieldLabel htmlFor="fieldgroup-password">
+          Mật khẩu tài khoản sinh viên
+        </FieldLabel>
         <Input
           id="fieldgroup-password"
           type="password"
@@ -80,18 +62,14 @@ export default function PopupPage() {
         />
       </Field>
       <Field>
-        <FieldLabel htmlFor="fieldgroup-interval">
-          Thời gian tuần hoàn (phút)
-        </FieldLabel>
-        <Input
-          id="fieldgroup-interval"
-          type="number"
-          value={interval}
-          onChange={(e) => setIntervalValue(Number(e.target.value))}
-          min="1"
+        <FieldLabel htmlFor="fieldgroup-plan">Kế hoạch học tập</FieldLabel>
+        <Textarea
+          id="fieldgroup-plan"
+          value={plan}
+          onChange={(e) => setPlan(e.target.value)}
         />
         <FieldDescription>
-          Thời gian cập nhật thông tin đăng nhập
+          Mẫu và ví dụ đăng ký học tập <Button variant="link">tại đây</Button>
         </FieldDescription>
       </Field>
       <Field orientation="horizontal" className="justify-between">
