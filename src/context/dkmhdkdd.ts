@@ -22,9 +22,7 @@ execute({
     // eslint-disable-next-line max-len
     window.location.href = `https://dkmh.tdtu.edu.vn/default.aspx?go=dkmhdkdd2&Token=${token}&RequestId=${reqId}`;
   },
-  extendFields(formData) {
-    const plan = "306105:28;306106:35;D01201:05";
-
+  extendFields(formData, { plan }) {
     const target = new URL(window.location.href).searchParams.get("go");
 
     if (target == "dkmhdkdd2") {
@@ -33,34 +31,51 @@ execute({
       return;
     }
 
-    const items = plan.split(";");
+    let classes = [];
 
-    items.forEach((item) => {
-      const [maMon, nhom] = item.split(":");
+    plan
+      .split(/\r?\n/g)
+      .filter((line) => line.trim() !== "")
+      .every((i) => {
+        classes = [];
 
-      if (maMon && nhom) {
-        const xpath = /* tx */ `
-          //tr[contains(., '${maMon}') and contains(.,
-          '${nhom}')]//input[@type='checkbox']
-        `;
+        const items = i.split(";");
 
-        const checkbox = document.evaluate(
-          xpath,
-          document,
-          null,
-          XPathResult.FIRST_ORDERED_NODE_TYPE,
-          null,
-        ).singleNodeValue as HTMLInputElement;
+        let count = 0;
 
-        if (checkbox) {
-          const name = checkbox.getAttribute("name");
-          formData.append(name, "on");
-        } else {
-          console.warn(
-            `Không tìm thấy checkbox cho Môn: ${maMon}, Nhóm: ${nhom}`,
-          );
-        }
-      }
-    });
+        items.forEach((item) => {
+          const [maMon, nhom] = item.split(":");
+
+          if (maMon && nhom) {
+            const xpath = /* tx */ `
+              //tr[td[2]//span[text()='${maMon}'] and
+              td[5]//span[text()='${nhom}']]//input[@type='checkbox' and
+              not(@disabled)]
+            `;
+
+            const checkbox = document.evaluate(
+              xpath,
+              document,
+              null,
+              XPathResult.FIRST_ORDERED_NODE_TYPE,
+              null,
+            ).singleNodeValue as HTMLInputElement;
+
+            if (checkbox) {
+              const name = checkbox.getAttribute("name");
+              classes.push(name);
+              count++;
+            } else {
+              console.warn(
+                `Không tìm thấy checkbox cho Môn: ${maMon}, Nhóm: ${nhom}`,
+              );
+            }
+          }
+        });
+
+        return items.length != count;
+      });
+
+    classes.forEach((i) => formData.append(i, "on"));
   },
 });

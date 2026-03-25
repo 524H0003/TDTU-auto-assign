@@ -1,28 +1,27 @@
-import { type IAccount } from "../types";
+import { LocalStorage } from "../types";
 
 export interface IExecute {
   passwordField?: string;
   url: string | (() => string);
-  conditionFunc?: (data: IAccount) => Promise<boolean> | boolean;
   handleError?: () => void;
-  extendFields?: (formData: {
-    append: (name: string, value: string) => void;
-  }) => void | Promise<void>;
+  extendFields?: (
+    formData: {
+      append: (name: string, value: string) => void;
+    },
+    localStorage: LocalStorage,
+  ) => void | Promise<void>;
 }
 
 export async function execute({
   passwordField = "ctl00$txtXacNhan",
   url,
-  conditionFunc = () => true,
   extendFields = () => {},
   handleError = () => {},
 }: IExecute) {
   if (typeof window === "undefined") return;
 
-  window.executeKit = async (data: IAccount) => {
+  window.executeKit = async (data: LocalStorage) => {
     if (data.password) {
-      if (!(await conditionFunc(data))) return;
-
       const targetUrl = typeof url === "function" ? url() : url;
 
       const form = document.createElement("form");
@@ -47,9 +46,12 @@ export async function execute({
       addToForm("__VIEWSTATE", getHiddenInput('input[name="__VIEWSTATE"]'));
 
       if (typeof extendFields === "function") {
-        extendFields({
-          append: (name, value) => addToForm(name, value),
-        });
+        extendFields(
+          {
+            append: (name, value) => addToForm(name, value),
+          },
+          data,
+        );
       }
 
       const submitBtn = document.createElement("button");

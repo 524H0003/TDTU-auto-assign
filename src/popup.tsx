@@ -71,6 +71,8 @@ export default function PopupPage() {
           id="fieldgroup-plan"
           value={plan}
           onChange={(e) => setPlan(e.target.value)}
+          rows={6}
+          className="max-h-36"
         />
         <FieldDescription>
           Mẫu và ví dụ đăng ký học tập <Button variant="link">tại đây</Button>

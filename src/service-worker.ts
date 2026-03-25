@@ -9,12 +9,12 @@ console.log = function (...args) {
 };
 
 function executeScript(tab: chrome.tabs.Tab) {
-  const target = new URL(tab.url!).searchParams.get("go") || 'dkmhdkdd';
+  const target = new URL(tab.url!).searchParams.get("go") || "dkmhdkdd";
 
   chrome.storage.local.get<LocalStorage>(
-    ["active", "password"],
-    async ({ active, password }) => {
-      if (!active) return;
+    ["active", "password", "plan"],
+    async (input) => {
+      if (!input.active) return;
 
       await chrome.scripting
         .executeScript({
@@ -32,7 +32,7 @@ function executeScript(tab: chrome.tabs.Tab) {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id! },
         world: "MAIN",
-        args: [{ password }],
+        args: [input],
         func: (creds) => {
           if (typeof window.executeKit === "function") {
             window.executeKit(creds);
