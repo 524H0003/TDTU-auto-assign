@@ -74,14 +74,19 @@ export default function PopupPage() {
           className="max-h-36"
         />
         <FieldDescription>
-          Mẫu và ví dụ đăng ký học tập <Button variant="link">tại đây</Button>
+          Mẫu và ví dụ đăng ký học tập{" "}
+          <a
+            href="#"
+            className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+          >
+            tại đây
+          </a>
         </FieldDescription>
       </Field>
       <Field orientation="horizontal" className="justify-between">
         <Button type="submit" onClick={handleSave}>
           Lưu thông tin
         </Button>
-
       </Field>
     </FieldGroup>
   );
