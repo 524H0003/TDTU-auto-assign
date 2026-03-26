@@ -1,6 +1,6 @@
 {
   "name": "tdtu-auto-assign",
-  "version": "1.0.0-dev.1",
+  "version": "1.0.0",
   "private": "true",
   "scripts": {
     "commit": "cz",
