@@ -37,8 +37,6 @@ execute({
       .split(/\r?\n/g)
       .filter((line) => line.trim() !== "")
       .every((i) => {
-        classes = [];
-
         const items = i.split(";");
 
         let count = 0;
@@ -86,7 +84,12 @@ execute({
           }
         });
 
-        return items.length != count;
+        if (items.length != count) {
+          classes = [];
+          return true;
+        }
+        
+        return false;
       });
 
     classes.forEach((i) => formData.append(i, "on"));
