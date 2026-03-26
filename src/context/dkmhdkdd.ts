@@ -88,7 +88,7 @@ execute({
           classes = [];
           return true;
         }
-        
+
         return false;
       });
 

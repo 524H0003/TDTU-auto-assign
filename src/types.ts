@@ -7,7 +7,7 @@ export interface IAppSetting {
   active: boolean;
 }
 
-export interface LocalStorage extends IAccount, IAppSetting { }
+export interface LocalStorage extends IAccount, IAppSetting {}
 
 declare global {
   interface Window {
