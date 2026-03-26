@@ -65,11 +65,24 @@ execute({
               const name = checkbox.getAttribute("name");
               classes.push(name);
               count++;
-            } else {
-              console.warn(
-                `Không tìm thấy checkbox cho Môn: ${maMon}, Nhóm: ${nhom}`,
-              );
             }
+          }
+
+          if (maMon) {
+            const xpath = /* tx */ `
+              //tr[td[2]//\\*[text()='${maMon}']]//input[@type='checkbox' and
+              not(@disabled)]
+            `;
+
+            const checkbox = document.evaluate(
+              xpath,
+              document,
+              null,
+              XPathResult.FIRST_ORDERED_NODE_TYPE,
+              null,
+            ).singleNodeValue as HTMLInputElement;
+
+            count += checkbox ? 0 : 1;
           }
         });
 
