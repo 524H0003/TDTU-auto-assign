@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 
 import packageJson from "../package.json";
-import { Button } from "./components/shadcn/ui/button";
 import {
   Field,
   FieldDescription,
@@ -31,10 +30,6 @@ export default function PopupPage() {
     );
   }, []);
 
-  const handleSave = () => {
-    chrome.storage.local.set({ plan, password });
-  };
-
   return (
     <FieldGroup className="p-4">
       <FieldSet>
@@ -48,8 +43,8 @@ export default function PopupPage() {
         <Switch
           id="toggleActive"
           checked={active}
-          onCheckedChange={(e) => {
-            chrome.storage.local.set({ active: e }, () => setActive(e));
+          onCheckedChange={(active) => {
+            chrome.storage.local.set({ active }, () => setActive(active));
           }}
         />
       </Field>
@@ -61,7 +56,10 @@ export default function PopupPage() {
           id="fieldgroup-password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            const password = e.target.value;
+            chrome.storage.local.set({ password }, () => setPassword(password));
+          }}
         />
       </Field>
       <Field>
@@ -69,7 +67,10 @@ export default function PopupPage() {
         <Textarea
           id="fieldgroup-plan"
           value={plan}
-          onChange={(e) => setPlan(e.target.value)}
+          onChange={(e) => {
+            const plan = e.target.value;
+            chrome.storage.local.set({ plan }, () => setPlan(plan));
+          }}
           rows={6}
           className="max-h-36"
         />
@@ -82,11 +83,6 @@ export default function PopupPage() {
             tại đây
           </a>
         </FieldDescription>
-      </Field>
-      <Field orientation="horizontal" className="justify-between">
-        <Button type="submit" onClick={handleSave}>
-          Lưu thông tin
-        </Button>
       </Field>
     </FieldGroup>
   );

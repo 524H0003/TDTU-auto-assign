@@ -70,7 +70,7 @@ execute({
 
           if (maMon) {
             const xpath = /* tx */ `
-              //tr[td[2]//\\*[text()='${maMon}']]//input[@type='checkbox' and
+              //tr[td[2]//span[text()='${maMon}']]//input[@type='checkbox' and
               not(@disabled)]
             `;
 
