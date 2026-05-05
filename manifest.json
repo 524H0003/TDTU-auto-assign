@@ -7,7 +7,7 @@
     "default_popup": "./dist/popup.html",
     "default_icon": "public/icon.png"
   },
-  "permissions": ["storage", "scripting", "alarms", "tabs"],
+  "permissions": ["storage", "scripting", "alarms", "tabs", "declarativeNetRequest"],
   "host_permissions": ["*://dkmh.tdtu.edu.vn/*"],
   "background": {
     "scripts": ["./dist/service-worker.js"],
