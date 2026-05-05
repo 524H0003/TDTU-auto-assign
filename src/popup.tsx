@@ -17,15 +17,17 @@ import { LocalStorage } from "./types";
 export default function PopupPage() {
   const [plan, setPlan] = useState(""),
     [password, setPassword] = useState(""),
-    [active, setActive] = useState<boolean>(false);
+    [active, setActive] = useState<boolean>(false),
+    [block, setBlock] = useState<boolean>(false);
 
   useEffect(() => {
     chrome.storage.local.get<LocalStorage>(
-      ["password", "plan", "active"],
+      ["password", "plan", "active", "blockResource"],
       (data) => {
         setPassword(data.password || "");
         setPlan(data.plan || "");
         setActive(data.active || false);
+        setBlock(data.blockResource || false);
       },
     );
   }, []);
@@ -45,6 +47,18 @@ export default function PopupPage() {
           checked={active}
           onCheckedChange={(active) => {
             chrome.storage.local.set({ active }, () => setActive(active));
+          }}
+        />
+      </Field>
+      <Field orientation="horizontal" className="w-fit">
+        <FieldLabel htmlFor="toggleActive">Chặn request thừa</FieldLabel>
+        <Switch
+          id="toggleActive"
+          checked={block}
+          onCheckedChange={(blockResource) => {
+            chrome.storage.local.set({ blockResource }, () =>
+              setBlock(blockResource),
+            );
           }}
         />
       </Field>

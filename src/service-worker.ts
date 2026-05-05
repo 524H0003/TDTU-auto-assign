@@ -61,3 +61,49 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
     console.error("Lỗi khi lấy thông tin tab:", error);
   }
 });
+
+const RULE_ID = 1001;
+
+async function syncBlockingRule(): Promise<void> {
+  const data = await chrome.storage.local.get<LocalStorage>(["blockResource"]);
+  const shouldBlock = data.blockResource === true;
+
+  if (shouldBlock) {
+    const rule: chrome.declarativeNetRequest.Rule = {
+      id: RULE_ID,
+      priority: 1,
+      action: {
+        type: chrome.declarativeNetRequest.RuleActionType.BLOCK,
+      },
+      condition: {
+        urlFilter: "*://*.tdtu.edu.vn/*",
+        resourceTypes: [
+          chrome.declarativeNetRequest.ResourceType.STYLESHEET,
+          chrome.declarativeNetRequest.ResourceType.FONT,
+          chrome.declarativeNetRequest.ResourceType.IMAGE,
+        ],
+      },
+    };
+
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      addRules: [rule],
+      removeRuleIds: [RULE_ID],
+    });
+    console.log("Đã kích hoạt chặn CSS/Images trên *.tdtu.edu.vn");
+  } else {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: [RULE_ID],
+    });
+
+    console.log("Đã gỡ chặn trên *.tdtu.edu.vn");
+  }
+}
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === "local" && changes.blockResource) {
+    syncBlockingRule();
+  }
+});
+
+chrome.runtime.onInstalled.addListener(syncBlockingRule);
+chrome.runtime.onStartup.addListener(syncBlockingRule);
