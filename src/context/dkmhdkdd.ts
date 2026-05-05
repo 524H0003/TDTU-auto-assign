@@ -42,7 +42,8 @@ execute({
         let count = 0;
 
         items.forEach((item) => {
-          const [maMon, nhom] = item.split(":");
+          const [maMon, ...rest] = item.split(":");
+          const nhom = rest.join(":");
 
           if (maMon && nhom) {
             const xpath = /* tx */ `
