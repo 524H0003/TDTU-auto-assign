@@ -93,7 +93,7 @@ async function syncBlockingRule(): Promise<void> {
         type: chrome.declarativeNetRequest.RuleActionType.BLOCK,
       },
       condition: {
-        urlFilter: "*://*.tdtu.edu.vn/*",
+        urlFilter: "*://dkmh.tdtu.edu.vn/*",
         resourceTypes: [
           chrome.declarativeNetRequest.ResourceType.STYLESHEET,
           chrome.declarativeNetRequest.ResourceType.FONT,
